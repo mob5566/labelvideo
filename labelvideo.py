@@ -17,11 +17,14 @@ import time
 import cv2
 import numpy as np
 
-usagemsg = "Usage: labelvideo.py <input_video> [output_file_name]"
+usagemsg = "Usage: labelvideo.py <input_video> [<output_file_name> [label_file]]"
 infomsg = "\
 Use mouse left button to drag target bounding box\n\
 Press 'q': quit\n\
 Press 'e': target disappear\n\
+Press 's': toggle stop/resume\n\
+Press 'j': slow down\n\
+Press 'k': speed up\n\
 Press ' ': save the bounding box\n\
 "
 
@@ -45,20 +48,26 @@ def onmouse(event, x, y, flags, param):
 if __name__ == '__main__':
 
   argv = sys.argv
-  if len(argv) != 2 and len(argv) != 3:
+  if len(argv) != 2 and len(argv) != 3 and len(argv) != 4:
     print(usagemsg)
     sys.exit(-1)
   else:
     ts = time.localtime()
-    outfile = '{}_{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}.txt'.format(os.path.basename(argv[1]),
+    outfile = os.path.basename(argv[1])
+
+    invideo = argv[1]
+
+    if len(argv)>=3:
+      outfile = argv[2]
+
+    inlabel = argv[3] if len(argv)==4 else None
+
+    outfile = '{}_{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}.txt'.format(outfile,
                     ts.tm_year, ts.tm_mon, ts.tm_mday,
                     ts.tm_hour, ts.tm_min, ts.tm_sec)
-
-    if len(argv)==3:
-      outfile = argv[2]
     
   # Initializing
-  cap = cv2.VideoCapture(argv[1])
+  cap = cv2.VideoCapture(invideo)
   wn = 'Label video'
   cv2.namedWindow(wn)
   cv2.setMouseCallback(wn, onmouse)
@@ -67,10 +76,32 @@ if __name__ == '__main__':
     print("Video doesn't exist!")
     sys.exit(-1)
 
+  if inlabel and not os.path.isfile(inlabel):
+    print("Input labelled file doesn't exist!")
+    sys.exit(-1)
+
+  # Read the labelled bounding box
+  if inlabel:
+    bbx = []
+    with open(inlabel, 'rb') as f:
+      for line in f.readlines():
+        bbx.append(map(int, line.split()))
+    bbxn = len(bbx)
+
+  # Get bounding box
+  if inlabel and bbxn>=1:
+    rect = bbx[0][1:]
+    sel = None if rect[0]==-1 else rect
+    if sel:
+      sel = [v/2 for v in sel]
+
+  # Show information
   print(infomsg)
   notend, curf = cap.read()
   fcnt = 1
   rois = []
+  delayT = 30
+  stop = True
 
   while notend:
 
@@ -80,15 +111,16 @@ if __name__ == '__main__':
 
     # Draw output frame
     if sel:
-      cv2.rectangle(outf, sel[:2], sel[2:], (255, 0, 0), 2)
+      cv2.rectangle(outf, tuple(sel[:2]), tuple(sel[2:]), (255, 0, 0), 2)
 
-    cv2.putText(outf, '{:5d}'.format(fcnt), (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
+    cv2.putText(outf, 'Frame {:5d}'.format(fcnt), (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
+    cv2.putText(outf, 'Delay {:5d}'.format(delayT), (0, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
 
     # Show the result
     cv2.imshow(wn, outf)
-    key = cv2.waitKey(10)&255
+    key = cv2.waitKey(delayT)&255
 
-    if key==ord(' '):
+    if key==ord(' ') or not stop:
       notend, curf = cap.read()
       
       # Record the bounding box
@@ -98,9 +130,27 @@ if __name__ == '__main__':
         rois.append((-1, -1, -1, -1))
       fcnt += 1
 
+      # Get bounding box
+      if inlabel and fcnt <= bbxn:
+        rect = bbx[fcnt-1][1:]
+        sel = None if rect[0]==-1 else rect
+        if sel:
+          sel = [v/2 for v in sel]
+
     # Clean the bounding box
     if key==ord('e'):
       sel = None
+
+    # Slow down or speed up video
+    if key==ord('j'):
+      delayT += 10
+
+    if key==ord('k'):
+      delayT -= 10
+
+    # Stop playing
+    if key==ord('s'):
+      stop ^= True
 
     # Quit
     if key==ord('q'):

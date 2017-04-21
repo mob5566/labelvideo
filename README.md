@@ -9,8 +9,6 @@
 
 ```bash
 # For labelling the tracking target manually
-python labelvideo.py <input_video> [output_file_name]
-
-# For verifying the labelled data in video
-python verifylabel.py <input_video> <input_label_file>
+# If the label file is given, it will initialize with bounding box
+python labelvideo.py <input_video> [<output_file_name> [label_file]]
 ```
