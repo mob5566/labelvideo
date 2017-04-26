@@ -1,3 +1,4 @@
+#!/usr/bin/env python2.7
 """
 # Label tracking target in video
 
@@ -26,8 +27,8 @@ Press 's': toggle stop/resume\n\
 Press 'j': slow down\n\
 Press 'k': speed up\n\
 Press ' ': save the bounding box\n\
-\
-* Use one dash '-' as the output_file_name will not generate output file\
+\n\
+* Use one dash '-' as the output_file_name will not generate output file\n\
 "
 
 drag_start = None
