@@ -26,8 +26,8 @@ Press 's': toggle stop/resume\n\
 Press 'j': slow down\n\
 Press 'k': speed up\n\
 Press ' ': save the bounding box\n\
-
-* Use one dash '-' as the output_file_name will not generate output file
+\
+* Use one dash '-' as the output_file_name will not generate output file\
 "
 
 drag_start = None
