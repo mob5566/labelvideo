@@ -26,6 +26,8 @@ Press 's': toggle stop/resume\n\
 Press 'j': slow down\n\
 Press 'k': speed up\n\
 Press ' ': save the bounding box\n\
+
+* Use one dash '-' as the output_file_name will not generate output file
 "
 
 drag_start = None
@@ -62,7 +64,8 @@ if __name__ == '__main__':
 
     inlabel = argv[3] if len(argv)==4 else None
 
-    outfile = '{}_{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}.txt'.format(outfile,
+    if outfile != '-':
+      outfile = '{}_{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}.txt'.format(outfile,
                     ts.tm_year, ts.tm_mon, ts.tm_mday,
                     ts.tm_hour, ts.tm_min, ts.tm_sec)
     
@@ -158,8 +161,9 @@ if __name__ == '__main__':
       break
 
   # Write the result
-  with open(outfile, 'wb') as f:
-    for i, bbx in enumerate(rois, 1):
-      f.write('{:5d} {:3d} {:3d} {:3d} {:3d}\n'.format(i, bbx[0]*2, bbx[1]*2, bbx[2]*2, bbx[3]*2))
+  if outfile!='-':
+    with open(outfile, 'wb') as f:
+      for i, bbx in enumerate(rois, 1):
+        f.write('{:5d} {:3d} {:3d} {:3d} {:3d}\n'.format(i, bbx[0]*2, bbx[1]*2, bbx[2]*2, bbx[3]*2))
 
   cv2.destroyAllWindows()
