@@ -26,6 +26,7 @@ Press 'e': target disappear\n\
 Press 's': toggle stop/resume\n\
 Press 'j': slow down\n\
 Press 'k': speed up\n\
+Press 'c': capture image\n\
 Press ' ': save the bounding box\n\
 \n\
 * Use one dash '-' as the output_file_name will not generate output file\n\
@@ -155,6 +156,17 @@ if __name__ == '__main__':
     # Stop playing
     if key==ord('s'):
       stop ^= True
+
+    # Capture image
+    if key==ord('c'):
+      tmpf = curf.copy()
+      tmpf = cv2.resize(tmpf, (tmpf.shape[1]/2, tmpf.shape[0]/2))
+
+      if sel:
+        cv2.rectangle(tmpf, tuple(sel[:2]), tuple(sel[2:]), (255, 0, 0), 2)
+
+      cv2.imwrite('imgs/{}_{}.jpg'.format(os.path.basename(invideo), fcnt), tmpf)
+      print('Capture imgs/{}_{}.jpg'.format(os.path.basename(invideo), fcnt))
 
     # Quit
     if key==ord('q'):
